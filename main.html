@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Hukum - UUD 1945</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>Portal Hukum Indonesia</h1>
+    <p>Informasi Seputar Undang-Undang Dasar 1945</p>
+  </header>
+  <button id="sidebarToggle" aria-label="Toggle Sidebar">☰</button>
+  <div id="container">
+    <div id="sidebar">
+      <ul>
+        <li onclick="showPage('home')">🏠 Homepage</li>
+        <li onclick="showPage('berita')">📰 Berita Terkini</li>
+        <li id="babHukumItem" onclick="toggleBabHukum()">📚 Bab Hukum</li>
+        <div class="nested-sidebar closed" id="bab-list">
+          <ul>
+            <li>Memuat Bab...</li>
+          </ul>
+        </div>
+        <li onclick="showPage('soal')">🎮 Game Tebak Pasal</li>
+        <li onclick="showPage('login')">🔐 Login</li>
+        <li onclick="showPage('tentang')">ℹ️ Tentang</li>
+      </ul>
+    </div>
+    <div id="main-content">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Cari pasal, ayat, atau kata kunci..."
+          onkeyup="searchContent()" />
+      </div>
+      <div id="content-area"></div>
+      <div class="login" id="login-form" style="display:none;">
+        <h2>Login Pengguna</h2>
+        <div class="form-group">
+          <input type="text" id="username" placeholder="Username" />
+        </div>
+        <div class="form-group">
+          <input type="password" id="password" placeholder="Password" />
+        </div>
+        <button onclick="loginUser()">Masuk</button>
+        <p>Belum punya akun? <a href="#" onclick="event.preventDefault(); showRegister();">Buat Akun</a></p>
+      </div>
+      <div class="register" id="register-form" style="display:none;">
+        <h2>Registrasi Pengguna Baru</h2>
+        <div class="form-group">
+          <input type="text" id="newUsername" placeholder="Username baru" />
+        </div>
+        <div class="form-group">
+          <input type="password" id="newPassword" placeholder="Password baru" />
+        </div>
+        <button onclick="registerUser()">Daftar</button>
+        <p>Sudah punya akun? <a href="#" onclick="event.preventDefault(); showLogin();">Masuk di sini</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const toggleBtn = document.getElementById("sidebarToggle");
+
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("closed");
+    });
+
+    function toggleBabHukum() {
+      const babList = document.getElementById("bab-list");
+      babList.classList.toggle("closed");
+    }
+
+    const contentArea = document.getElementById("content-area");
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const babList = document.getElementById("bab-list");
+
+    let UUD_DATA = {};
+    const soal = [
+      {
+        ayat: "Negara Indonesia ialah Negara Kesatuan yang berbentuk Republik.",
+        jawaban: "Pasal 1 Ayat 1",
+        pilihan: ["Pasal 1 Ayat 1", "Pasal 4 Ayat 1", "Pasal 27 Ayat 1", "Pasal 30 Ayat 1"]
+      },
+      {
+        ayat: "Presiden memegang kekuasaan membentuk undang- undang dengan persetujuan Dewan Perwakilan Rakyat.",
+        jawaban: "Pasal 5 Ayat 1",
+        pilihan: ["Pasal 5 Ayat 1", "Pasal 10 Ayat 1", "Pasal 2 Ayat 2", "Pasal 20 Ayat 1"]
+      },
+      {
+        ayat: "Tiap-tiap warga negara berhak dan wajib ikut serta dalam usaha pembelaan negara.",
+        jawaban: "Pasal 30 Ayat 1",
+        pilihan: ["Pasal 30 Ayat 1", "Pasal 29 Ayat 1", "Pasal 18 Ayat 1", "Pasal 26 Ayat 1"]
+      },
+      {
+        ayat: "Negara Indonesia ialah Negara Kesatuan yang berbentuk Republik.",
+        jawaban: "Pasal 1 Ayat 1",
+        pilihan: ["Pasal 1 Ayat 1", "Pasal 4 Ayat 1", "Pasal 27 Ayat 1", "Pasal 30 Ayat 1"]
+      },
+      {
+        ayat: "Presiden memegang kekuasaan membentuk undang- undang dengan persetujuan Dewan Perwakilan Rakyat.",
+        jawaban: "Pasal 5 Ayat 1",
+        pilihan: ["Pasal 5 Ayat 1", "Pasal 10 Ayat 1", "Pasal 2 Ayat 2", "Pasal 20 Ayat 1"]
+      },
+      {
+        ayat: "Tiap-tiap warga negara berhak dan wajib ikut serta dalam usaha pembelaan negara.",
+        jawaban: "Pasal 30 Ayat 1",
+        pilihan: ["Pasal 30 Ayat 1", "Pasal 29 Ayat 1", "Pasal 18 Ayat 1", "Pasal 26 Ayat 1"]
+      },
+      {
+        ayat: "Majelis Permusyawaratan Rakyat menetapkan Undang-Undang Dasar dan garis-garis besar dari haluan negara.",
+        jawaban: "Pasal 3 Ayat 1",
+        pilihan: ["Pasal 3 Ayat 1", "Pasal 2 Ayat 1", "Pasal 1 Ayat 2", "Pasal 5 Ayat 2"]
+      },
+      {
+        ayat: "Presiden memberi gelaran, tanda jasa, dan lain-lain tanda kehormatan.",
+        jawaban: "Pasal 15 Ayat 1",
+        pilihan: ["Pasal 15 Ayat 1", "Pasal 14 Ayat 1", "Pasal 13 Ayat 2", "Pasal 17 Ayat 1"]
+      }
+
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    function shuffleArray(array) {
+      return array
+        .map((value) => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+    }
+
+    let remainingSoal = [];
+
+    function loadQuestion() {
+      const questionText = document.getElementById("questionText");
+      const choicesContainer = document.getElementById("choices");
+      const feedback = document.getElementById("feedback");
+      const scoreDisplay = document.getElementById("scoreDisplay");
+
+      if (!questionText || !choicesContainer || !feedback) return;
+
+      feedback.textContent = "";
+
+      if (remainingSoal.length === 0) {
+        remainingSoal = shuffleArray([...soal]);
+      }
+
+      const data = remainingSoal.pop();
+      questionText.textContent = `Ayat: "${data.ayat}"`;
+
+      const shuffledChoices = shuffleArray(data.pilihan);
+      choicesContainer.innerHTML = "";
+
+      shuffledChoices.forEach((pilihan) => {
+        const btn = document.createElement("button");
+        btn.textContent = pilihan;
+        btn.onclick = () => {
+          if (pilihan === data.jawaban) {
+            feedback.textContent = "✅ Benar!";
+            feedback.style.color = "green";
+            score++;
+            localStorage.setItem('gameScore', score);
+          } else {
+            feedback.textContent = `❌ Salah. Jawaban benar: ${data.jawaban}`;
+            feedback.style.color = "red";
+          }
+          if (scoreDisplay) {
+            scoreDisplay.textContent = `Skor: ${score}`;
+          }
+        };
+        choicesContainer.appendChild(btn);
+      });
+
+      // Tampilkan skor saat load
+      if (scoreDisplay) {
+        score = parseInt(localStorage.getItem('gameScore')) || 0;
+        scoreDisplay.textContent = `Skor: ${score}`;
+      }
+    }
+
+    const pages = {
+      home: `<h2>Selamat Datang di Portal Hukum</h2><p>UUD 1945 adalah dasar hukum tertinggi di Indonesia.</p>`,
+      berita: `<h2>Berita Terkini</h2><div><h3>Revisi KUHP Disahkan</h3><p>Perubahan mencakup pasal kontroversial.</p></div>`,
+      tentang: `<h2>Tentang</h2><p>Portal ini menyediakan informasi edukatif.</p>`,
+      soal: `
+        <div class="card">
+                <h2>Tebak Pasal UUD 1945</h2>
+                <p id="scoreDisplay">Skor: 0</p>
+                <p id="questionText">Memuat soal...</p>
+                <div id="choices"></div>
+                <p class="feedback" id="feedback"></p>
+                <button onclick="loadQuestion()">Soal Selanjutnya</button>
+            </div>`
+    };
+
+    function showPage(pageName, babKey = null) {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'none';
+      contentArea.innerHTML = '';
+
+      if (pageName === 'login') {
+        loginForm.style.display = 'block';
+      } else if (pageName === 'register') {
+        registerForm.style.display = 'block';
+      } else if (pages[pageName]) {
+        contentArea.innerHTML = pages[pageName];
+        if (pageName === 'soal') loadQuestion();
+      } else if (babKey && UUD_DATA[babKey]) {
+        displayBabContent(babKey);
+      } else {
+        contentArea.innerHTML = "<p>Halaman tidak ditemukan.</p>";
+      }
+    }
+
+    function showRegister() {
+      contentArea.innerHTML = '';
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+    }
+
+    function showLogin() {
+      contentArea.innerHTML = '';
+      registerForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    }
+
+    function loginUser() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      const storedUser = localStorage.getItem('user');
+      const storedPass = localStorage.getItem('pass');
+
+      if ((user === 'admin' && pass === 'admin') || (user === storedUser && pass === storedPass)) {
+        alert("Login berhasil sebagai " + user);
+        showPage('home');
+      } else {
+        alert("Login gagal. Username atau password salah.");
+      }
+    }
+
+    function registerUser() {
+      const newUser = document.getElementById('newUsername').value;
+      const newPass = document.getElementById('newPassword').value;
+
+      if (newUser && newPass) {
+        localStorage.setItem('user', newUser);
+        localStorage.setItem('pass', newPass);
+        alert("Registrasi berhasil. Silakan login.");
+        showLogin();
+      } else {
+        alert("Harap isi semua kolom.");
+      }
+    }
+
+    function searchContent() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'none';
+
+      if (query === '') {
+        showPage('home');
+        return;
+      }
+
+      contentArea.innerHTML = `<p>Fitur pencarian hanya contoh. Data belum tersedia.</p>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      showPage('home');
+    });
+  </script>
+</body>
+
+</html>
